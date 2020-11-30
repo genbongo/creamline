@@ -66,11 +66,24 @@
                             <select name="cmb_user" id="cmb_user" class="form-control" onchange="getAndSetLocation(this.options[this.selectedIndex].getAttribute('data-address'))">
                                 <option value="0" data-address="None">Select User</option>
                                 @foreach($user->where('user_role', 2)->get() as $usr)
-                                    <option value="{{ $usr->id  }}" data-address="{{ $usr->address }}"> {{ $usr->fname.' '.$usr->lname }}</option>
+                                    <option value="{{ $usr->id  }}" data-address="{{ $usr }}"> {{ $usr->fname.' '.$usr->lname }}</option>
                                 @endforeach
                             </select>
                         </div>
                     </div>
+
+<!--                     <div class="form-group">
+                        <label class="col-sm-12 control-label">Client</label>
+                        <div class="col-sm-12">
+                            <select name="cmb_user" id="cmb_user" class="form-control" onchange="getAndSetLocation(this.options[this.selectedIndex].getAttribute('data-address'))">
+                                <option value="0" data-address="None">Select User</option>
+                                @foreach($user->where('user_role', 2)->get() as $usr)
+                                    <option value="{{ $usr->id  }}" data-address="{{ $usr->address }}"> {{ $usr->fname.' '.$usr->lname }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div> -->
+
                     <div class="form-group">
                         <label class="col-sm-12 control-label">Location</label>
                         <div class="col-sm-12">
@@ -228,7 +241,9 @@
 
 
     //------------------------------FUNCTION--------------------------//
-    function getAndSetLocation(address){
+    function getAndSetLocation(user){
+        console.log(user)
+
         document.getElementById('location').value = address;
     }
 </script>

@@ -29,31 +29,18 @@ class ClientListController extends Controller
      */
     public function index(Request $request)
     {
-        $staff_area = DB::table('stores')
-            ->where('user_id', Auth::user()->id)
-            ->select('*')
-            ->get();
 
-        $staff_area_id = $staff_area[0]->area_id;
+        $area = auth()->user()->area;
 
-        $client_list = DB::table('users')
-            ->join("stores", "users.id", "=", "stores.user_id")
-            ->select("*")
-            ->where('stores.area_id', $staff_area_id)
-            ->where('users.user_role', 2)
-            ->get();
-
-        // echo "<pre>";
-        // var_dump($client);
-        // echo "</pre>";
+        $clients =  $area->clients();
 
         if ($request->ajax()) {
-            return Datatables::of($client_list)
+            return Datatables::of($clients)
                 ->addIndexColumn()
                 ->make(true);
         }
 
-        return view('staff/client_list', compact('client_list'));
+        return view('staff/client_list', compact('clients'));
     }
 
     /**

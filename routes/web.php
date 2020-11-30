@@ -54,6 +54,9 @@ Route::resource('order_replacement', 'OrderReplacementController');
 Route::resource('order_damage', 'ProductDamagesController');
 Route::resource('ads', 'AdController');
 Route::resource('quota', 'QuotaController');
+Route::get('client/{id}/stores', 'ClientController@storeList');
+Route::get('client/{id}/stores/json', 'ClientController@storeListJson');
+Route::post('replacement/set-deliver', 'OrderReplacementController@setDeliveryDate');
 
 //admin dashboard
 Route::get('display_order_to_deliver_count', 'HomeController@display_order_to_deliver_count')->name('display_order_to_deliver_count');
@@ -63,6 +66,7 @@ Route::get('display_product_of_the_month', 'HomeController@display_product_of_th
 Route::get('display_weekly_sales_data', 'HomeController@display_weekly_sales_data')->name('display_weekly_sales_data');
 Route::get('display_sales_data', 'HomeController@display_sales_data')->name('display_sales_data');
 Route::get('display_loss_data', 'HomeController@display_loss_data')->name('display_loss_data');
+Route::get('low-stocks', 'HomeController@lowStocks')->name('low-stocks');
 
 
 /*---------------------------------------------------------------------------------------
@@ -73,6 +77,7 @@ Route::get('display_loss_data', 'HomeController@display_loss_data')->name('displ
 Route::resource('staff','StaffController');
 Route::resource('main','StaffDashboardController');
 Route::resource('product_list','StaffProductController');
+Route::post('emergency', 'StaffDashboardController@emergency');
 
 
 /*---------------------------------------------------------------------------------------

@@ -37,6 +37,7 @@ return array(
     'App\\Http\\Controllers\\PendingController' => $baseDir . '/app/Http/Controllers/PendingController.php',
     'App\\Http\\Controllers\\ProductController' => $baseDir . '/app/Http/Controllers/ProductController.php',
     'App\\Http\\Controllers\\ProductDamagesController' => $baseDir . '/app/Http/Controllers/ProductDamagesController.php',
+    'App\\Http\\Controllers\\ProductFileDamagesController' => $baseDir . '/app/Http/Controllers/ProductFileDamagesController.php',
     'App\\Http\\Controllers\\ProductFileReportController' => $baseDir . '/app/Http/Controllers/ProductFileReportController.php',
     'App\\Http\\Controllers\\ProductReportController' => $baseDir . '/app/Http/Controllers/ProductReportController.php',
     'App\\Http\\Controllers\\PromoController' => $baseDir . '/app/Http/Controllers/PromoController.php',

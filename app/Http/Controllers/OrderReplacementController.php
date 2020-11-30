@@ -33,7 +33,7 @@ class OrderReplacementController extends Controller
     {
         if(env("DB_CONNECTION") == "pgsql"){
             $file_replacement = DB::select("SELECT DISTINCT ON (product_reports.id) products.id AS prodid, product_reports.id AS reportid, product_reports.client_id AS clientid, 
-                                products.name AS prodname, product_file_reports.file_report_image, 
+                                products.name AS prodname, product_file_reports.file_report_image, product_file_reports.quantity, product_file_reports.delivery_date,
                                 product_reports.is_replaced, users.fname, users.lname FROM product_reports 
                                 INNER JOIN product_file_reports ON product_reports.id = product_file_reports.product_report_id 
                                 INNER JOIN products ON product_reports.product_id = products.id 
@@ -44,7 +44,7 @@ class OrderReplacementController extends Controller
                 ->join('product_file_reports', 'product_reports.id', '=', 'product_file_reports.product_report_id')
                 ->join('products', 'product_reports.product_id', '=', 'products.id')
                 ->join('users', 'product_reports.client_id', '=', 'users.id')
-                ->select('products.id AS prodid', 'product_reports.id AS reportid', 'product_reports.client_id AS clientid', 'products.name AS prodname', 'product_file_reports.file_report_image', 'product_reports.is_replaced', 'users.fname', 'users.lname')
+                ->select('products.id AS prodid', 'product_reports.id AS reportid', 'product_file_reports.quantity', 'product_reports.client_id AS clientid', 'products.name AS prodname', 'product_file_reports.file_report_image', 'product_reports.is_replaced', 'product_reports.delivery_date', 'users.fname', 'users.lname')
                 ->groupBy('product_reports.id')
                 ->get();
         }
@@ -53,11 +53,20 @@ class OrderReplacementController extends Controller
             return Datatables::of($file_replacement)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-   
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Replace Order" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-primary btn-sm editReplacementOrder">Approve</a>&nbsp;';
-                    $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Disapprove Replacement" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-danger btn-sm editDisapproveReplacement">Disapprove</a>';
 
-                     return $btn;
+                    if ($row->delivery_date != "0000-00-00") {
+                        return null;
+                    }
+
+                    if ($row->is_replaced == 1) {
+                        $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Replace Order" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-success btn-sm setDeliver">Set Delivery</a>&nbsp;';
+                    } else {
+
+                        $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Replace Order" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-primary btn-sm editReplacementOrder">Approve</a>&nbsp;';
+                        $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Disapprove Replacement" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-danger btn-sm editDisapproveReplacement">Disapprove</a>';
+                    }
+
+                    return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -136,5 +145,20 @@ class OrderReplacementController extends Controller
     public function destroy(Product_Report $prod_report)
     {
         //do nothing...........
+    }
+
+    public function setDeliveryDate(Request $request)
+    {
+        $deliveryDate = $request->txt_replacement_delivery_date;
+        $fileReport = Product_Report::find($request->id);
+        $fileReport->delivery_date = $deliveryDate;
+        $fileReport->save();
+
+        $clientReport = ProductFileReport::where('product_report_id', '=', $fileReport->id)->first();
+        $clientReport->delivery_date = $deliveryDate;
+
+        return response()->json([
+            'message' => "Delivery Date Set!",
+        ]);
     }
 }

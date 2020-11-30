@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
 use App\Order;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Carbon;
+use App\Traits\GlobalFunction;
 use DataTables;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class StaffDashboardController extends Controller
 {
+
+    use GlobalFunction;
     /**
      * Create a new controller instance.
      *
@@ -29,28 +32,48 @@ class StaffDashboardController extends Controller
      */
     public function index(Request $request)
     {
-        $order = DB::table('orders')
-                ->join('products', 'orders.product_id', '=', 'products.id')
-                ->join('users', 'orders.client_id', '=', 'users.id')
-                ->join('stores', 'orders.store_id', '=', 'stores.id')
-                ->select('products.name', 'products.product_image', 'orders.quantity_ordered',
-                    'orders.ordered_total_price', 'orders.created_at', 'orders.is_approved', 'orders.is_completed', 'orders.is_cancelled', 'orders.delivery_date', 'orders.id', 'users.fname', 'users.lname', 'stores.store_name', 'stores.store_address')
-                // ->where('delivery_date', date('Y-m-d'))
-                // ->where('is_completed', 0)
-                ->get();
+
+        $area = auth()->user()->area;
+
+        $now = date('Y-m-d');
+
+        $order =  $area->orders()->where('delivery_date', '=', $now)->get();
 
         if ($request->ajax()) {
             return Datatables::of($order)
                 ->addIndexColumn()
-                ->addColumn('action', function ($row) {
-   
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Mark this order as completed" data-id="'.$row->id.'" class="btn btn-primary btn-sm editCompleteOrder">Completed</a>&nbsp;';
-
-                    $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Mark this order as cancelled" data-id="'.$row->id.'" class="btn btn-danger btn-sm editCancelOrder">Cancel</a>';
-
-                     return $btn;
+                ->addColumn('name', function($row) {
+                    return $row->client->fname. " " . $row->client->lname;
                 })
-                ->rawColumns(['action'])
+                ->addColumn('store_name', function($row) {
+                    return $row->store->store_name;
+                })
+                ->addColumn('store_address', function($row) {
+                    return $row->store->store_address;
+                })
+                ->addColumn('action', function ($row) {
+
+                    if (!$row->is_completed && !$row->is_cancelled) {
+                        $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Mark this order as completed" data-id="'.$row->id.'" class="btn btn-primary btn-sm editCompleteOrder">Completed</a>&nbsp;';
+
+                        $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Mark this order as cancelled" data-id="'.$row->id.'" class="btn btn-danger btn-sm editCancelOrder">Cancel</a>';
+
+                         return $btn;
+                     } else {
+                        return null;
+                     }
+   
+                })
+                ->addColumn('status', function($row) {
+                    if ($row->is_completed) {
+                        return '<span class="text-success font-weight-bold">Completed</span>';
+                    }
+
+                    if ($row->is_cancelled) {
+                        return '<span class="text-danger font-weight-bold">Cancelled</span>';
+                    }
+                })
+                ->rawColumns(['action', 'store_name', 'store_address', 'name', 'status'])
                 ->make(true);
         }
 
@@ -82,9 +105,22 @@ class StaffDashboardController extends Controller
         //if not completed
         if($request->input("action") == "cancel"){
 
+            // if 1 cancelled by client, if 2 cancelled by staff
+            $cancelled_by = $request->input("cancel_option");
+
+            if ($cancelled_by == 2) {
+
+                $text_message = 'We\'re sorry for the inconvenience. Your Order # '.$request->input("order_id").'cannot be delivered today to some technical difficulties';
+                $this->messageNotification(null , $request->input("order_id"), $text_message);
+            }
+
             //update the order
-            DB::table('orders')->where('id', $request->input("order_id"))->update(['is_cancelled' => 1]);
-            DB::table('orders')->where('id', $request->input("order_id"))->update(['reason' => $request->input("reason")]);
+            DB::table('orders')->where('id', $request->input("order_id"))
+                               ->update([
+                                    'cancelled_by' => $cancelled_by,
+                                    'is_cancelled' => 1,
+                                    'reason' => $request->input("reason")
+                                ]);
 
             // return response
             $response = [
@@ -93,5 +129,62 @@ class StaffDashboardController extends Controller
             ];
             return response()->json($response, 200);
         }
+    }
+
+    public function emergency(Request $request)
+    {
+        $staff = Auth::user();
+        $stores = $staff->area->stores;
+
+        foreach ($stores as $store) {
+            $now = date('Y-m-d');
+            $order = Order::where('store_id', '=', $store->id)
+                          ->where('delivery_date', '=', $now)
+                          ->where('is_completed', '=', 0)
+                          ->where('is_cancelled', '=', 0)
+                          ->first();
+            if($order) {
+               $order->update([
+                    'cancelled_by' => 2,
+                    'is_cancelled' => 1,
+                    'reason' => $request->input("reason")
+                ]); 
+
+                $text_message = 'We\'re sorry for the inconvenience. Your Order # '.$order->id.'cannot be delivered today to some technical difficulties';
+
+                $this->messageNotification(null , $request->input("order_id"), $text_message);
+            }
+        }
+
+        $text_message = 'Delivery from area'.$staff->area->area_name .'cannot be delivered today to some technical difficulties. 
+                         Reason: '.
+                         $request->reason;
+
+        $this->messageNotification('09123213123' , $request->input("order_id"), $text_message);
+
+        $response = [
+            'success' => true,
+            'message' => 'Emergency Message Sent!',
+        ];
+        return response()->json($response, 200);
+    }
+
+    public function messageNotification($contact_num = null, $order_id, $text_message)
+    {
+        // $result = $this->global_itexmo($contact_num, $text_message." \n\n\n\n","ST-CREAM343228_LGZPB", "#5pcg2mpi]");
+        $result = $this->global_itexmo($contact_num, $text_message." \n\n\n\n","ST-CREAM343228_LGZPB", '#5pcg2mpi]');
+
+        if ($result == ""){
+            // echo "iTexMo: No response from server!!!
+            // Please check the METHOD used (CURL or CURL-LESS). If you are using CURL then try CURL-LESS and vice versa.   
+            // Please CONTACT US for help. ";   
+        }else if ($result == 0){
+            // echo "Message Sent!";
+        }
+        else{    
+            // echo "Error Num ". $result . " was encountered!";
+        }
+
+        return;
     }
 }

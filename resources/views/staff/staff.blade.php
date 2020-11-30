@@ -18,6 +18,7 @@
             <th>Last Name</th>
             <th>Email</th>
             <th>Contact</th>
+            <th>Assigned Area</th>
             <th>Status</th>
             <th width="280px">Action</th>
         </tr>
@@ -158,6 +159,7 @@
                 {data: 'lname', name: 'lname'},
                 {data: 'email', name: 'email'},
                 {data: 'contact_num', name: 'contact_num'},
+                {data: 'area', name: 'area'},
                 {
                     data: 'is_active', name: 'is_active',
                     "render": function (data, type, full, meta) {

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Product;
+use App\Rules\MatchOldPassword;
 use App\User;
-use Validator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Rules\MatchOldPassword;
+use Illuminate\Support\Facades\Hash;
+use Validator;
 
 
 class HomeController extends Controller
@@ -252,6 +253,20 @@ class HomeController extends Controller
 
         return response()->json([
             'count'   => $getOrderToDeliverCount[0],
+            'status'  => 200
+        ]);
+    }
+
+    public function lowStocks()
+    {
+        $products =  Product::with('stock')->get();
+
+        $lowStocks = $products->filter(function ($product) {
+            return $product->stock->quantity < $product->stock->threshold;
+        });
+
+        return response()->json([
+            'count'   => $lowStocks->count(),
             'status'  => 200
         ]);
     }

@@ -31,7 +31,7 @@ class FileReplacementController extends Controller
     {
         if(env("DB_CONNECTION") == "pgsql"){
             $file_replacement = DB::select("SELECT DISTINCT ON (product_reports.id) products.id AS prodid, product_reports.id AS reportid, 
-                                products.name AS prodname, product_file_reports.file_report_image, 
+                                products.name AS prodname, product_file_reports.file_report_image, product_file_reports.quantity
                                 product_reports.is_replaced, users.fname, users.lname FROM product_reports 
                                 INNER JOIN product_file_reports ON product_reports.id = product_file_reports.product_report_id 
                                 INNER JOIN products ON product_reports.product_id = products.id 
@@ -42,7 +42,7 @@ class FileReplacementController extends Controller
             $file_replacement = DB::table('product_reports')
                 ->join('product_file_reports', 'product_reports.id', '=', 'product_file_reports.product_report_id')
                 ->join('products', 'product_reports.product_id', '=', 'products.id')
-                ->select('products.id AS prodid', 'product_reports.id AS reportid', 'products.name AS prodname', 'product_file_reports.file_report_image', 'product_reports.is_replaced')
+                ->select('products.id AS prodid', 'product_reports.id AS reportid', 'products.name AS prodname', 'product_file_reports.file_report_image','product_file_reports.quantity', 'product_reports.is_replaced')
                 ->groupBy('product_reports.id')
                 ->where('product_reports.client_id', Auth::user()->id)
                 ->get();
@@ -54,7 +54,13 @@ class FileReplacementController extends Controller
                 ->make(true);
         }
 
-        return view('file_replacement/index', compact('file_replacement'));
+        if(Auth::user()->user_role == 2 ) {
+            $stores = Auth::user()->stores;
+        } else {
+            $stores = Store::all();
+        }
+
+        return view('file_replacement/index', compact('file_replacement', 'stores'));
     }
 
     /**
@@ -67,7 +73,7 @@ class FileReplacementController extends Controller
     {
         if($request->hasFile('file_report_image'))
         {
-            $allowedfileExtension=['jpg','png'];
+            $allowedfileExtension=['jpg','png', 'jpeg'];
             $files = $request->file('file_report_image');
 
             $items = Product_Report::create([
@@ -75,6 +81,7 @@ class FileReplacementController extends Controller
                 'store_id' => $request->store_id,
                 'size' => $request->size_id,
                 'flavor' => $request->flavor_id,
+                'quantity' => $request->quantity,
                 'client_id' => Auth::user()->id,
                 'is_replaced' => 0,
             ]);
@@ -90,7 +97,8 @@ class FileReplacementController extends Controller
                 {
                     $fileReports = ProductFileReport::create([
                         'product_report_id' => $items->id,
-                        'file_report_image' => $new_name
+                        'file_report_image' => $new_name,
+                        'quantity' => $request->quantity,
                     ]);
                 }
             }

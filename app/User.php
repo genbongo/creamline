@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Area;
+use App\Store;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,9 +17,7 @@ class User extends Authenticatable
      *
      * @var array
      */
-    protected $fillable = [
-        'fname', 'mname', 'lname', 'address', 'contact_num', 'email', 'password', 'user_role', 'img', 'is_pending',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -36,4 +36,15 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+
+    public function area()
+    {
+        return $this->belongsTo(Area::class);
+    }
+
+    public function stores()
+    {
+        return $this->hasMany(Store::class);
+    }
 }

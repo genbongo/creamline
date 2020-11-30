@@ -500,6 +500,7 @@ class ComposerStaticInitb6e3acd1184fea39e78f4d6468129c20
         'App\\Http\\Controllers\\PendingController' => __DIR__ . '/../..' . '/app/Http/Controllers/PendingController.php',
         'App\\Http\\Controllers\\ProductController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductController.php',
         'App\\Http\\Controllers\\ProductDamagesController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductDamagesController.php',
+        'App\\Http\\Controllers\\ProductFileDamagesController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductFileDamagesController.php',
         'App\\Http\\Controllers\\ProductFileReportController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductFileReportController.php',
         'App\\Http\\Controllers\\ProductReportController' => __DIR__ . '/../..' . '/app/Http/Controllers/ProductReportController.php',
         'App\\Http\\Controllers\\PromoController' => __DIR__ . '/../..' . '/app/Http/Controllers/PromoController.php',

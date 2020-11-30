@@ -10,7 +10,7 @@
                 <div class="card-body">
                     @if(Auth::user()->user_role == 99)
                     <div class="row">
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             <div class="card text-white bg-success mb-3" style="max-width: 28rem;">
                                 <div class="card-body">
                                     <h5 class="card-title">Order(s) to Deliver:</h5>
@@ -18,19 +18,27 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-sm-4">
-                            <div class="card text-black-50 bg-warning mb-3" style="max-width: 28rem;">
+                        <div class="col-sm-3">
+                            <div class="card text-white bg-info mb-3" style="max-width: 28rem;">
                                 <div class="card-body">
                                     <h5 class="card-title">Order(s) to Approve:</h5>
                                     <h1 id="lbl-display-order-to-approve">...</h1>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-sm-4">
+                        <div class="col-sm-3">
                             <div class="card text-white bg-danger mb-3" style="max-width: 28rem;">
                                 <div class="card-body">
                                     <h5 class="card-title">Out of stocks Product(s):</h5>
                                     <h1 id="lbl-display-out-of-stock-product">...</h1>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="card text-black-50 bg-warning mb-3" style="max-width: 28rem;">
+                                <div class="card-body">
+                                    <h5 class="card-title">Low of stocks Product(s):</h5>
+                                    <h1 id="lbl-low-stocks-product">...</h1>
                                 </div>
                             </div>
                         </div>
@@ -320,6 +328,24 @@
                     // console.log(response)
                     //return the response to the DOM
                     $("#lbl-display-order-to-deliver").html(response.count.data)
+                },
+                error: function(err){
+                    console.log(err)
+                }
+            })
+        }
+
+        populate_low_stocks_producs()
+
+        function populate_low_stocks_producs() {
+            $.ajax({
+                url: "{{ url('low-stocks') }}",
+                method: "GET",
+                data: {},
+                success: function(response){
+                    // console.log(response)
+                    //return the response to the DOM
+                    $("#lbl-low-stocks-product").html(response.count)
                 },
                 error: function(err){
                     console.log(err)

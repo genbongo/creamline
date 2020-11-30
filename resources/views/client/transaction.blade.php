@@ -111,9 +111,12 @@
             <label for="select_store" class="control-label">Store:</label>
             <select class="form-control" id="select_store">
                 <option value="99999">Choose a store</option>
-                @foreach($stores->orderBy('store_address', 'asc')->get() as $store)
-                    <option value="{{ $store->id }}">{{ $store->store_address.' - '.$store->store_name }}</option>
-                @endforeach
+
+                @if( auth()->user()->user_role == 2)
+                    @foreach( auth()->user()->stores as $store)
+                        <option value="{{ $store->id }}">{{ $store->store_address.' - '.$store->store_name }}</option>
+                    @endforeach
+                @endif
             </select>
         </div>
     </div>
@@ -130,7 +133,6 @@
 
             //if dropdown is changed
             $("#select_customer").change(() => {
-
                 //get the dom values
                 const details = $("#select_customer option:selected").attr("data-detail");
 
@@ -151,6 +153,18 @@
                 $("#address").val(address);
                 $("#contact").val(contact);
                 $("#email").val(email);
+
+
+                $.get(`/client/${id}/stores/json`, function (stores) {
+                    //get user's stores
+                    var storeInput = '';
+
+                    stores.map(store => {
+                      storeInput += '<option value="'+store.id+'">'+store.store_name+'</option>'
+                    })
+                    //embed it to DOM
+                    $("#select_store").empty().append(storeInput)
+                })
             });
 
             // create or update cart

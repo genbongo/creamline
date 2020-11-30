@@ -67,7 +67,9 @@ class ClientController extends Controller
 
                     $btn = $btn.' <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="'.$delete_status.' Client" data-stat="'.$status.'" data-toggle="tooltip" data-id="'.$row->id.'" data-original-title="Delete" class="btn '.$delete_btn.' btn-sm deleteClient">'.$delete_status.'</a>';
 
-                     return $btn;
+                    $btn = $btn.' <a href="/client/'.$row->id.'/stores" title="Client Store" class="btn btn-info btn-sm">'.'View Store'.'</a>';
+
+                    return $btn;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
@@ -198,5 +200,57 @@ class ClientController extends Controller
             'message' => $output,
         ];
         return response()->json($response, 200);
+    }
+
+    public function storeList($id, Request $request)
+    {
+        $client = User::find($id);
+
+       if ($request->ajax()) {
+            return Datatables::of($client->stores)
+                ->addIndexColumn()
+                ->addColumn('area', function($row) {
+                    return $row->area->area_name;
+                })
+                ->addColumn('action', function ($row) {
+                    $status = '';
+                    $delete_status = '';
+                    $delete_btn = '';
+                    $btn_label = '';
+                    $title = '';
+
+                    if($row->is_deleted == 0){
+                        $status = 0;
+                        $delete_status = 'Active';
+                        $delete_btn = 'btn-danger';
+                        $btn_label = 'Deactivate';
+                        $btn_type = "deactivate";
+                        $title = "Deactivate Store";
+                    }else{
+                        $status = 0;
+                        $delete_status = 'Deactivate';
+                        $delete_btn = 'btn-success';
+                        $btn_label = 'Activate';
+                        $btn_type = "activate";
+                        $title = "Activate Store";
+                    }
+   
+                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="'.$title.'" data-id="'.$row->id.'" data-original-title="Edit" class="edit btn '.$delete_btn.' btn-sm '.$btn_type.'">'. $btn_label .'</a>';
+
+                    return $btn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view("client/store_list", compact('client'));
+    }
+
+
+    public function storeListJson($id)
+    {
+        $client = User::find($id);
+
+        return response()->json( $client->stores);
     }
 }

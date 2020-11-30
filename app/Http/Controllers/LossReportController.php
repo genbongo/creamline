@@ -28,13 +28,13 @@ class LossReportController extends Controller
     public function index(Request $request)
     {
         $loss_report = DB::table('orders')
-                ->join('products', 'orders.product_id', '=', 'products.id')
-                ->join('users', 'orders.client_id', '=', 'users.id')
-                ->select('products.name', 'products.product_image', 'orders.quantity_ordered',
-                    'orders.ordered_total_price', 'orders.created_at', 'orders.is_approved', 'orders.is_completed', 'orders.is_cancelled', 'orders.delivery_date', 'orders.id', 'users.fname', 'users.lname', 'users.contact_num', 'orders.attempt', 'orders.reason')
-                // ->where("is_rescheduled", 1)
-                ->where("is_replacement", 1)
-                ->get();
+                        ->join('products', 'orders.product_id', '=', 'products.id')
+                        ->join('users', 'orders.client_id', '=', 'users.id')
+                        ->select('products.name', 'products.product_image', 'orders.quantity_ordered',
+                            'orders.ordered_total_price', 'orders.created_at', 'orders.is_approved', 'orders.is_completed', 'orders.is_cancelled', 'orders.delivery_date', 'orders.id', 'users.fname', 'users.lname', 'users.contact_num', 'orders.attempt', 'orders.reason')
+                        // ->where("is_rescheduled", 1)
+                        ->where("is_replacement", 1)
+                        ->get();
 
         if ($request->ajax()) {
             return Datatables::of($loss_report)

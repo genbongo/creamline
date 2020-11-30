@@ -34,7 +34,6 @@ class StaffController extends Controller
             return Datatables::of($staff)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-
                     $status = '';
                     $delete_status = '';
                     $delete_btn = '';
@@ -57,7 +56,10 @@ class StaffController extends Controller
 
                      return $btn;
                 })
-                ->rawColumns(['action'])
+                ->addColumn('area', function ($row) {
+                    return $row->area ? $row->area->area_name : 'Not Assigned'; 
+                })
+                ->rawColumns(['action', 'area'])
                 ->make(true);
         }
 
@@ -73,69 +75,81 @@ class StaffController extends Controller
     public function store(Request $request)
     {
         if($request->action == 'assign_staff'){
+            $user = User::find($request->assign_id);
+            $user->area_id = $request->area_id;
+            $user->save();
 
-            Store::updateOrCreate([
-                'user_id' => $request->assign_id,
-            ],[
-                'user_id' => $request->assign_id,
-                'area_id' => $request->area_id,
-                'store_name' => "",
-                'store_address' => "",
-            ]);
-
-            // return response
             $response = [
                 'success' => true,
                 'message' => 'Successfully Assigned.',
             ];
             return response()->json($response, 200);
-
-        }else if($request->action == 'update_staff_profile'){
-            User::updateOrCreate([
-                'id' => $request->staff_id
-            ],[
-                'fname' => $request->fname,
-                'mname' => $request->mname,
-                'lname' => $request->lname,
-                'email' => $request->email,
-                'contact_num' => $request->contact_num,
-                'address' => "NA",
-                'email_verified_at' => "2020-06-08 07:57:47",
-                'img' => "NA",
-                'remember_token' => "NA"
-            ]);
-
-            // return response
-            $response = [
-                'success' => true,
-                'message' => 'Staff successfully updated.',
-            ];
-            return response()->json($response, 200);
-        }else{
-            User::updateOrCreate([
-                'id' => $request->staff_id
-            ],[
-                'fname' => $request->fname,
-                'mname' => $request->mname,
-                'lname' => $request->lname,
-                'email' => $request->email,
-                'contact_num' => $request->contact_num,
-                'user_role' => 1,   //1 for staff
-                'is_pending' => 0,   //0 means not pending
-                'password' => Hash::make($request->password),
-                'address' => "NA",
-                'email_verified_at' => "2020-06-08 07:57:47",
-                'img' => "NA",
-                'remember_token' => "NA"
-            ]);
-
-            // return response
-            $response = [
-                'success' => true,
-                'message' => 'Staff successfully saved.',
-            ];
-            return response()->json($response, 200);
         }
+
+        // if($request->action == 'assign_staff'){
+
+        //     Store::updateOrCreate([
+        //         'user_id' => $request->assign_id,
+        //     ],[
+        //         'user_id' => $request->assign_id,
+        //         'area_id' => $request->area_id,
+        //         'store_name' => "",
+        //         'store_address' => "",
+        //     ]);
+
+        //     // return response
+        //     $response = [
+        //         'success' => true,
+        //         'message' => 'Successfully Assigned.',
+        //     ];
+        //     return response()->json($response, 200);
+
+        // }else if($request->action == 'update_staff_profile'){
+        //     User::updateOrCreate([
+        //         'id' => $request->staff_id
+        //     ],[
+        //         'fname' => $request->fname,
+        //         'mname' => $request->mname,
+        //         'lname' => $request->lname,
+        //         'email' => $request->email,
+        //         'contact_num' => $request->contact_num,
+        //         'address' => "NA",
+        //         'email_verified_at' => "2020-06-08 07:57:47",
+        //         'img' => "NA",
+        //         'remember_token' => "NA"
+        //     ]);
+
+        //     // return response
+        //     $response = [
+        //         'success' => true,
+        //         'message' => 'Staff successfully updated.',
+        //     ];
+        //     return response()->json($response, 200);
+        // }else{
+        //     User::updateOrCreate([
+        //         'id' => $request->staff_id
+        //     ],[
+        //         'fname' => $request->fname,
+        //         'mname' => $request->mname,
+        //         'lname' => $request->lname,
+        //         'email' => $request->email,
+        //         'contact_num' => $request->contact_num,
+        //         'user_role' => 1,   //1 for staff
+        //         'is_pending' => 0,   //0 means not pending
+        //         'password' => Hash::make($request->password),
+        //         'address' => "NA",
+        //         'email_verified_at' => "2020-06-08 07:57:47",
+        //         'img' => "NA",
+        //         'remember_token' => "NA"
+        //     ]);
+
+        //     // return response
+        //     $response = [
+        //         'success' => true,
+        //         'message' => 'Staff successfully saved.',
+        //     ];
+        //     return response()->json($response, 200);
+        // }
     }
 
     /**

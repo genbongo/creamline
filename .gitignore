@@ -6,11 +6,12 @@
 /public/img/filedamage
 /public/img/ads
 /storage/*.key
-# /vendor
-# .env
+/vendor
+.env
 .env.backup
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+docker-compose.yml

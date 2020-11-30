@@ -70,8 +70,7 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-
+    {  
         //if there is a product image selected
         if($request->hasFile("product_image")){
             $validation = Validator::make($request->all(), [

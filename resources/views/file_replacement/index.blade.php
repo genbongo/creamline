@@ -1,5 +1,4 @@
 @extends('layouts.app')
-@inject('stores','App\Store')
 @inject('products','App\Product')
 
 @section('content')
@@ -17,6 +16,7 @@
             <th>ID</th>
             <th>Product Name</th>
             <th>Images</th>
+            <th>Quantity</th>
             <th>Status</th>
         </tr>
         </thead>
@@ -39,7 +39,7 @@
                         <label>Store name:</label>
                         <select class="form-control" id="store_id" name="store_id">
                             <option value="">Please select a store</option>
-                            @foreach($stores->where("store_name", "!=", "")->get() as $store)
+                            @foreach($stores as $store)
                                 <option value="{{ $store->id }}">{{ $store->store_name }}</option>
                             @endforeach
                         </select>
@@ -52,6 +52,10 @@
                                 <option value="{{ $product->id }}">{{ $product->name }}</option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity:</label>
+                        <input type="text" class="form-control" id="quantity" name="quantity">
                     </div>
                     <div class="form-group">
                         <label>Size:</label>
@@ -113,14 +117,16 @@
                 {
                     data: 'file_report_image', name: 'file_report_image',
                     render: function(data, type, full, meta){
+                        console.log(full)
                         let output = ''
                         if(data != ""){
-                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.reportid+"'>...</a>"
+                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.reportid+"'>"+full.file_report_image+"</a>"
                         }
 
                         return output
                     }
                 },
+                {data: 'quantity', name: 'quantity'},
                 {
                     data: 'is_replaced', name: 'is_replaced',
                     "render": function (data, type, full, meta) {
@@ -191,8 +197,8 @@
             $.get("{{ url('edit_product') }}" + '/' + currentID, function (data) {
 
                 //variations here such as flavors and size
-                var flavor_list = data.variation.flavor.slice(0, -1).split(", ")
-                var size_list = data.variation.size.slice(0, -1).split(", ")
+                var flavor_list = data.variation.flavor.slice(0, -1).split(",")
+                var size_list = data.variation.size.slice(0, -1).split(",")
 
                 var flavor_output = '';
                 var size_output = '';

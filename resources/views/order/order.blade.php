@@ -77,6 +77,7 @@
                             <th>Client</th>
                             <th>Product Name</th>
                             <th>Images</th>
+                            <th>Quantity</th>
                             <th>Status</th>
                             <th width="280px">Action</th>
                         </tr>
@@ -256,6 +257,32 @@
     </div>
 </div>
 
+{{-- set replacement schedule--}}
+<div class="modal fade" id="fileReplacementDelivery" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Delivery Schedule</h4>
+            </div>
+            <div class="modal-body">
+                <form id="replacementDelivery" name="replacementDelivery" class="form-horizontal">
+                    <input type="hidden" name="id" id="reportId" value="">
+                     <input type="hidden" name="replacement_delivery_to_display" id="replacement_delivery_to_display">
+                    <div class="form-group">
+                        <label for="txt_resched_delivery_date" class="col-sm-12 control-label">Delivery date</label>
+                        <div class="col-sm-12">
+                            <input type="date" name="txt_replacement_delivery_date" class="form-control" id="txt_replacement_delivery_date">
+                        </div>
+                    </div>
+                    <div class="col-sm-offset-12 col-sm-10">
+                        <button type="submit" class="btn btn-primary" id="btnConfirmReschedOrder">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
     $(() => {
 
@@ -275,6 +302,9 @@
             processing: true,
             serverSide: true,
             ajax: "{{ url('order') }}",
+            data: { 
+              ajaxid: 4
+            },
             columns: [
                 // {data: 'DT_RowIndex', name: 'DT_RowIndex'},
                 {data: 'id', name: 'id'},
@@ -559,22 +589,28 @@
                     render: function(data, type, full, meta){
                         let output = ''
                         if(data != ""){
-                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.reportid+"'>...</a>"
+                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.reportid+"'>"+full.file_report_image+"</a>"
                         }
 
                         return output
                     }
                 },
+                {data: 'quantity', name: 'quantity'},
                 {
                     data: 'is_replaced', name: 'is_replaced',
                     "render": function (data, type, full, meta) {
                         var output = '';
-                        if(data === 0){
+
+                        if (full.delivery_date == '0000-00-00') {
+                            if(data === 0){
                             output = '<span class="text-warning font-weight-bold">Pending</span>'
-                        }else if(data === 1){
-                            output = '<span class="text-success font-weight-bold">Approved</span>'
-                        }else{
-                            output = '<span class="text-danger font-weight-bold">Not Approved</span>'
+                            }else if(data === 1){
+                                output = '<span class="text-success font-weight-bold">Approved</span>'
+                            }else{
+                                output = '<span class="text-danger font-weight-bold">Not Approved</span>'
+                            }
+                        } else {
+                            output = '<span class="text-success font-weight-bold">On-delivery</span>'
                         }
                         return output;
                     }
@@ -582,6 +618,63 @@
                 {data: 'action', name: 'action', orderable: false, searchable: false},
             ]
         });
+
+        //display when set delivery is clicked
+        $(document).on('click', '.setDeliver', function(e){
+
+            const product_report_id = $(this).attr("data-id")
+
+            $("#reportId").val(product_report_id);
+
+            $("#fileReplacementDelivery").modal("show");
+        });
+
+        $("#replacementDelivery").on('submit', function(e) {
+            e.preventDefault();
+
+            if(!$("#txt_replacement_delivery_date").val()){
+
+                swal("Error", "Please select a date to reschedule the delivery!")
+
+            }else{
+                //get the value of delivery date
+                const resched_delivery_date = moment($("#txt_replacement_delivery_date").val()).format('MMMM D YYYY');
+
+                //set the value for date to disdplay
+                $("#replacement_delivery_to_display").val(resched_delivery_date);
+
+                //disable the button
+                $("#btnConfirmReschedOrder").attr("disabled", "disabled");
+
+                $.ajax({
+                    url:"{{ url('replacement/set-deliver') }}",
+                    method:"POST",
+                    data:new FormData(this),
+                    dataType:'JSON',
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    success: function (data) {
+                        console.log("printing data");
+                        console.log(data);
+
+                        swal("Information", "Order has been successfully confirmed!").then(res => {
+                            $('#updateReschedModal').modal('hide');
+                            // undeliverTable.draw();
+                            drawAllTable()
+                        })
+
+                        //disable the button
+                        $("#btnConfirmReschedOrder").removeAttr("disabled");
+
+                    },
+                    error: function (data) {
+                        console.log('Error:', data);
+                    }
+                });
+            }
+
+        })
 
         //when display dot is clicked
         $(document).on('click', '.btnDisplayImages', function(){
@@ -609,6 +702,7 @@
             //display the modal
             $("#displayModalImagesHere").modal("show")
         })
+
 
         //when replacement order is approved
         $(document).on('click', '.editReplacementOrder', function(){
