@@ -43,6 +43,7 @@ Route::get('edit_product/{id}','ProductController@edit_product')->name('edit_pro
 Route::resource('product','ProductController');
 Route::resource('stock','StockController');
 Route::resource('fridge','FridgeController');
+Route::post('assign-fridge','FridgeController@assign');
 Route::resource('order', 'OrderController');
 Route::resource('undeliver', 'UndeliveredOrderController');
 Route::resource('history', 'TransactionHistoryOrderController');

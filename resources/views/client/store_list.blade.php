@@ -6,7 +6,7 @@
     <div class="container-fluid">
         <div class="row">
             <h4 class="center">{{ $client->fname . " ". $client->lname  }}</h4>
-            <button class="btn btn-info ml-auto" id="createNewClient">Create Client</button>
+            <button class="btn btn-info ml-auto" id="addNewstore">Add Store</button>
         </div>
     </div>
     <br>
@@ -27,60 +27,40 @@
 </div>
 
 {{-- create/update client modal--}}
-<div class="modal fade" id="ajaxModel" aria-hidden="true">
+<div class="modal fade" id="formModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title" id="modelHeading"></h4>
             </div>
             <div class="modal-body">
-                <form id="clientForm" name="clientForm" class="form-horizontal">
+                <form id="storeForm" name="storeForm" class="form-horizontal">
                     <div class="row">
                         <div class="col-md-12">
-                            <input type="hidden" name="client_id" id="client_id">
-                            <input type="hidden" name="action" id="action">
+                            <input type="hidden" name="client_id" id="client_id" value="{{ $client->id }}">
                             <div class="form-group">
-                                <label for="fname" class="col-sm-12 control-label">First Name</label>
+                                <label for="name" class="col-sm-12 control-label">Store Name</label>
                                 <div class="col-sm-12">
-                                    <input type="text" class="form-control" id="fname" name="fname" placeholder="Enter First Name"
+                                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter Storem Name"
                                            value="" maxlength="50" required="" autocomplete="off" onkeypress="return onlyLetters(event)">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="mname" class="col-sm-12 control-label">Middle Name</label>
+                                <label for="address" class="col-sm-12 control-label">Store Address</label>
                                 <div class="col-sm-12">
-                                    <input type="text" class="form-control" id="mname" name="mname" placeholder="Enter Middle Name"
+                                    <input type="text" class="form-control" id="address" name="address" placeholder="Enter Address"
                                            value="" maxlength="50" required="" autocomplete="off" onkeypress="return onlyLetters(event)">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label for="lname" class="col-sm-12 control-label">Last Name</label>
+                                <label for="lname" class="col-sm-12 control-label">Designated Location</label>
                                 <div class="col-sm-12">
-                                    <input type="text" class="form-control" id="lname" name="lname" placeholder="Enter Last Name"
-                                           value="" maxlength="50" required="" autocomplete="off" onkeypress="return onlyLetters(event)">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-sm-12 control-label" for="email">Email</label>
-                                <div class="col-sm-12">
-                                    <input type="email" class="form-control" id="email" name="email"
-                                           placeholder="Enter Email"
-                                           value="" maxlength="50" required="" autocomplete="off">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="contact_num" class="col-sm-12 control-label">Contact Number</label>
-                                <div class="col-sm-12">
-                                    <input type="number" class="form-control" id="contact_num" name="contact_num" placeholder="Enter Contact"
-                                           value="" required="" autocomplete="off" onkeypress="return onlyNumbers(event)">
-                                </div>
-                            </div>
-                            <div class="form-group" id="div_password">
-                                <label class="col-sm-12 control-label" for="password">Generated Password</label>
-                                <div class="col-sm-12">
-                                    <input type="text" class="form-control" id="password" name="password"
-                                           placeholder="Enter Password"
-                                           value="" maxlength="50" required="" autocomplete="off">
+                                    <select  class="form-control" id="area" name="area">
+                                        <option value=null disabled selected>Please Select Area</option>
+                                        @foreach(\App\Area::all() as $area )
+                                            <option value="{{$area->id}}">{{ $area->area_name.": ".$area->area_code }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -106,12 +86,12 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-
+        const id = {!! $client->id !!};
         // datatable
         var table = $('#dataTable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ url('client/3/stores') }}",
+            ajax: `/client/${id}/stores`,
             columns: [
                 // {data: 'DT_RowIndex', name: 'DT_RowIndex'},
                 {data: 'id', name: 'id'},
@@ -201,5 +181,12 @@
             });
         });
     });
+
+
+    $('#addNewstore').on('click', () => {
+        $('#formModal').modal('show')
+    })
+
+    
 </script>
 @endsection

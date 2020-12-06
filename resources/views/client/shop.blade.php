@@ -76,10 +76,17 @@
                         <div class="form-group">
                             <label for="quantity" class="col-md-12 col-form-label">Quantity:</label>
                             <div class="col-md-12">
-                                <input class="form-control" type="number" id="quantity" name="quantity" value="1" />
+                                <input 
+                                    class="form-control" 
+                                    type="number" 
+                                    id="quantity" 
+                                    name="quantity" 
+                                    value="1"
+                                />
                             </div>
                         </div>
                         <div class="form-group">
+                            <div id="totalPrice"></div>
                             <button class="btn btn-success full-width-button" id="btnAddToCart">Add to Cart</button>
                         </div>
                     </div>
@@ -133,7 +140,6 @@
                 $("#div-modal-text").html("&#8369; " + price + ".00");
                 $("#div-stocks-qty").html(prod_stocks_qty);
                 
-
                 // $('#description').val(data.product_description);
                 $('#preOrderModal').modal('show');
             });
@@ -141,25 +147,22 @@
 
         //when size is changed
         $("#size_id").change(() =>{
-
             var price = $("#size_id option:selected").attr("data-price");
+            var qty = $("#quantity").val();
+
             $("#div-modal-text").html("&#8369; " + price + ".00");
+            $("#totalPrice").html("&#8369; " + price * qty + ".00");
         });
 
         //when the quantity event is blurred
         $("#quantity").blur(function(){
-
             var current_val = $("#quantity").val();
-
             if(current_val < 1){
                 $("#quantity").val("1");
             }else{
-
                 var price = $("#size_id option:selected").attr("data-price");
                 const totalPrice = price * current_val;
-
-                $("#div-modal-text").html("&#8369; " + totalPrice + ".00");
-
+                $("#totalPrice").html("&#8369; " + totalPrice + ".00");
             }
 
         });
@@ -229,6 +232,8 @@
             var variation_price = data.variation.price.split(",");
             var output = '';
 
+            $("#totalPrice").html("&#8369; " + variation_price[0] + ".00");
+
             for(var i = 0; i < variation_size.length - 1; i++){
 
                 output += '<option value="'+ variation_size[i] +'" data-price="'+ variation_price[i] +'">'+ variation_size[i] +'</option>';
@@ -241,13 +246,12 @@
         //create a function that will populate the flavor dropdown
         function populateFlavorDropdown(data){
 
-            var variation_flavor = data.variation.flavor.split(",");
+            var  variation_flavor = data.variation.flavor.split(",").filter(flavor => flavor != '');
+
             var output = '';
 
-            for(var i = 0; i < variation_flavor.length - 1; i++){
-
+            for(var i = 0; i < variation_flavor.length; i++){
                 output += '<option value="'+ variation_flavor[i] +'">'+ variation_flavor[i] +'</option>';
-
             }
 
             $("#flavor_id").html(output);

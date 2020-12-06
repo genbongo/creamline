@@ -276,12 +276,6 @@
                                 File Replacement
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('file_damage.index') }}">
-                                <span data-feather="file-minus"></span>
-                                File Damage
-                            </a>
-                        </li>
                     </ul>
                     @endif
 

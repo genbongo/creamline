@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Fridge;
+use App\Store;
+use DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use DataTables;
 
 class FridgeController extends Controller
 {
@@ -32,11 +33,9 @@ class FridgeController extends Controller
             return Datatables::of($fridge)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-
                     $status = '';
                     $delete_status = '';
                     $delete_btn = '';
-
                     if($row->is_deleted == 0){
                         $status = 0;
                         $delete_status = 'Delete';
@@ -51,9 +50,21 @@ class FridgeController extends Controller
 
                     $btn = $btn.' <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="'.$delete_status.' Fridge" data-stat="'.$status.'" data-toggle="tooltip" data-id="'.$row->id.'" data-original-title="Delete" class="btn '.$delete_btn.' btn-sm deleteFridge">'.$delete_status.'</a>';
 
+                    if ($row->status == 1) {
+                        $btn = $btn.' <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Assign Fridge" data-stat="'.$status.'" data-toggle="tooltip" data-id="'.$row->id.'"data-original-title="Assign" class="btn btn-warning btn-sm assignFridge">Assign</a>';
+                    } elseif ($row->status == 2) {
+                        $btn = $btn.' <a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Pull out Fridge" data-stat="'.$status.'" data-toggle="tooltip" data-id="'.$row->id.'"data-original-title="Pull Out" class="btn btn-warning btn-sm pullOutFridge">Pull Out</a>';
+                    }
+
                     return $btn;
                 })
-                ->rawColumns(['action'])
+                ->addColumn('assignee', function($row) {
+                    return $row->client->fname." ".$row->client->lname;
+                })
+                ->addColumn('store_adrs', function($row) {
+                    return $row->store->store_address;
+                })
+                ->rawColumns(['action', 'assignee', 'store_adrs'])
                 ->make(true);
         }
 
@@ -75,7 +86,7 @@ class FridgeController extends Controller
             'model' => $request->model,
             'description' => $request->description,
             'location' => $request->location,
-            'status' => $request->status,
+            'status' => $request->status ? $request->status : 1,
         ]);
 
         // return response
@@ -83,6 +94,7 @@ class FridgeController extends Controller
             'success' => true,
             'message' => 'Fridge saved successfully.',
         ];
+        
         return response()->json($response, 200);
     }
 
@@ -121,6 +133,22 @@ class FridgeController extends Controller
         $response = [
             'success', true,
             'message' => $output,
+        ];
+        return response()->json($response, 200);
+    }
+
+
+    public function assign(Request $request)
+    {
+        $fridge = Fridge::find($request->fridge_id);
+        $fridge->user_id = $request->client_id;
+        $fridge->location = Store::find($request->store_id)->area_id;
+        $fridge->status = 2;
+        $fridge->save();
+
+        $response = [
+            'success', true,
+            'message' => 'Fridge Assigned Successfully',
         ];
         return response()->json($response, 200);
     }

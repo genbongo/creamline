@@ -67,7 +67,8 @@
                                 <label class="col-sm-12 control-label">Size</label>
                                 <div class="col-sm-12">
                                     <input for="size" type="text" class="form-control" id="size"
-                                           placeholder="Eg: 110ml, 250ml"
+                                           placeholder="Eg: 110ml"
+                                           name="size"
                                            value="" maxlength="255" autocomplete="off">
                                 </div>
                             </div>
@@ -75,7 +76,8 @@
                                 <label class="col-sm-12 control-label">Flavor</label>
                                 <div class="col-sm-12">
                                     <input for="flavor" type="text" class="form-control" id="flavor"
-                                           placeholder="Eg: Manggo, Ube"
+                                           placeholder="Eg: Manggo"
+                                           name="flavor"
                                            value="" maxlength="255" autocomplete="off" onkeypress="return onlyLetters(event)">
                                 </div>
                             </div>
@@ -345,27 +347,27 @@
             }
 
             // input
-            var $input = $('<input name="size" class="form-control" placeholder="Press semicolon (;) to add sizes" />').keyup(function(event) {
+            // var $input = $('<input name="size" class="form-control" placeholder="Press semicolon (;) to add sizes" />').keyup(function(event) {
 
-              if(event.which == 186) {
-                // key press is space or comma
-                var val = $(this).val().slice(0, -1); // remove space/comma from value
+            //   if(event.which == 186) {
+            //     // key press is space or comma
+            //     var val = $(this).val().slice(0, -1); // remove space/comma from value
 
-                // append to list of emails with remove button
-                $list.append($('<li class="list-group-item multipleInput-size"><span> ' + val + '</span></li>')
-                  .append($('<a href="#" class="multipleInput-close" title="Remove">x</a>')
-                    .click(function(e) {
-                      $(this).parent().remove();
-                      e.preventDefault();
-                    })
-                  )
-                );
+            //     // append to list of emails with remove button
+            //     $list.append($('<li class="list-group-item multipleInput-size"><span> ' + val + '</span></li>')
+            //       .append($('<a href="#" class="multipleInput-close" title="Remove">x</a>')
+            //         .click(function(e) {
+            //           $(this).parent().remove();
+            //           e.preventDefault();
+            //         })
+            //       )
+            //     );
 
-                $(this).attr('placeholder', '');
-                // empty input
-                $(this).val('');
-              }
-            });
+            //     $(this).attr('placeholder', '');
+            //     // empty input
+            //     $(this).val('');
+            //   }
+            // });
 
             // container div
             var $container = $('<div class="multipleInput-container"  id="container-size"/>').click(function() {
@@ -409,29 +411,28 @@
               );
             }
 
-
             // input
-            var $input2 = $('<input name="flavor" class="form-control" placeholder="Press semicolon (;) to add flavors" onkeypress="return onlyLetters(event)" />').keyup(function(event) {
+            // var $input2 = $('<input name="flavor" class="form-control" placeholder="Press semicolon (;) to add flavors" onkeypress="return onlyLetters(event)" />').keyup(function(event) {
 
-              if(event.which == 186) {
-                // key press is space or comma
-                var val = $(this).val().slice(0, -1); // remove space/comma from value
+            //   if(event.which == 186) {
+            //     // key press is space or comma
+            //     var val = $(this).val().slice(0, -1); // remove space/comma from value
 
-                // append to list of emails with remove button
-                $list2.append($('<li class="list-group-item multipleInput-flavor"><span> ' + val + '</span></li>')
-                  .append($('<a href="#" class="multipleInput-close" title="Remove">x</a>')
-                    .click(function(e) {
-                      $(this).parent().remove();
-                      e.preventDefault();
-                    })
-                  )
-                );
+            //     // append to list of emails with remove button
+            //     $list2.append($('<li class="list-group-item multipleInput-flavor"><span> ' + val + '</span></li>')
+            //       .append($('<a href="#" class="multipleInput-close" title="Remove">x</a>')
+            //         .click(function(e) {
+            //           $(this).parent().remove();
+            //           e.preventDefault();
+            //         })
+            //       )
+            //     );
 
-                $(this).attr('placeholder', '');
-                // empty input
-                $(this).val('');
-              }
-            });
+            //     $(this).attr('placeholder', '');
+            //     // empty input
+            //     $(this).val('');
+            //   }
+            // });
 
             // container div
             var $container = $('<div class="multipleInput-container" id="container-flavor" />').click(function() {

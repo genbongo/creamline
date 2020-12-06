@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Product_Report;
 use App\ProductFileReport;
+use App\Product_Report;
+use App\Store;
+use DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use DataTables;
 use Validator;
 
 class FileReplacementController extends Controller

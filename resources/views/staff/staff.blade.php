@@ -197,7 +197,6 @@
         $('#saveBtn').click(function (e) {
             e.preventDefault();
             $(this).html('Saving..');
-
             $.ajax({
                 data: $('#staffForm').serialize(),
                 url: "{{ url('staff') }}",

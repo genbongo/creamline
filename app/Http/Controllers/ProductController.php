@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Product;
 use App\Stock;
 use App\Variation;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use DataTables;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Validator;
 
 class ProductController extends Controller
@@ -103,7 +104,7 @@ class ProductController extends Controller
 
                 //-------------get the value for price----------------//
                 $price_value = '';
-                $size_value = explode(", ", $request->size);
+                $size_value = explode(",", $request->size);
                 $price_value = ProductController::return_price_value($size_value);
 
                 //insert to variation table
@@ -150,9 +151,14 @@ class ProductController extends Controller
 
                 //-------------get the value for price----------------//
                 $price_value = '';
-                $size_value = explode(", ", $request->size);
+                $size_value = explode(",", $request->size);
+
+                $size_value = Arr::where($size_value, function ($value, $key){
+                    return $value != '';
+                });
+
                 $price_value = ProductController::return_price_value($size_value);
-                
+
                 //insert to variation table
                 Variation::where("product_id", $request->product_id)->update([
                     'size' => $request->size, 

@@ -206,8 +206,11 @@ class ClientController extends Controller
     {
         $client = User::find($id);
 
+
        if ($request->ajax()) {
-            return Datatables::of($client->stores)
+            $stores = $client->stores;
+
+            return Datatables::of($stores)
                 ->addIndexColumn()
                 ->addColumn('area', function($row) {
                     return $row->area->area_name;

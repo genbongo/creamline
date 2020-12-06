@@ -70,14 +70,11 @@
                         </thead>
                         <tbody>
                             <?php 
-
                                 //get the value for variation size and price
                                 $var_size = explode(",", $variation->size);
                                 $var_price = explode(",", $variation->price);
-                                $size_count = count($var_size) - 1;
-
+                                $size_count = count($var_price) - 1;
                                 for($i = 0; $i < $size_count; $i++){
-
                                     echo "<tr>";
                                     echo    "<td>".$var_size[$i]."</td>";
                                     echo    "<td>&#8369;&nbsp;&nbsp;<input class='names' value='".$var_price[$i]."'</td>";
@@ -107,7 +104,6 @@
 
         // create or update price
         $('#productForm').on('submit', function (e) {
-
             e.preventDefault();
 
             $.ajax({

@@ -100,113 +100,91 @@
                     
                     @if(Auth::user()->user_role == 2)
                     <!-- Modal -->
-                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered" role="document">
-                            <div class="modal-content">
-                                <div class="modal-body">
-                                    <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
-                                        <ol class="carousel-indicators">
-                                            <!-- <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-                                            <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-                                            <li data-target="#carouselExampleIndicators" data-slide-to="2"></li> -->
-                                            <!-- @foreach($ads->get() as $ad)
-                                                <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-                                            @endforeach -->
-                                            <?php
-                                                $i = 0;
-
-                                                foreach($ads->get() as $ad){
-                                                    if($i === 0){
-                                                        echo '<li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>';
-                                                    }
-                                                    else{
-                                                        echo '<li data-target="#carouselExampleIndicators" data-slide-to="'.$i.'"></li>';
-                                                    }
-                                                    $i++;
-                                                }
-                                            ?>
-                                        </ol>
-                                        <div class="carousel-inner">
-                                            <?php
-                                                $i = 0;
-
-                                                foreach($ads->get() as $ad){
-                                                    if($i === 0){
-                                                        echo '<div class="carousel-item active">
-                                                                <img class="d-block h-100 w-100" src="'.URL("img/ads").'/'.$ad->ads_image.'">
-                                                            </div>';
-                                                    }
-                                                    else{
-                                                        echo '<div class="carousel-item">
-                                                                <img class="d-block h-100 w-100" src="'.URL("img/ads").'/'.$ad->ads_image.'">
-                                                            </div>';
-                                                    }
-                                                    $i++;
-                                                }
-                                            ?>
+                        @if(\App\Ad::all()->count())
+                            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-body">
+                                            <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                                                <ol class="carousel-indicators">
+                                                    <!-- <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                                                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                                                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li> -->
+                                                    <!-- @foreach($ads->get() as $ad)
+                                                        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                                                    @endforeach -->
+                                                    @foreach(\App\Ad::all() as $key => $value)
+                                                        <li data-target="#carouselExampleIndicators" data-slide-to="{{ $key }}" class="{{ $key ? 'active' : '' }}"></li>
+                                                    @endforeach
+                                                </ol>
+                                                <div class="carousel-inner">
+                                                    @foreach(\App\Ad::all() as $key => $value)
+                                                        <div class="carousel-item active">
+                                                            <img class="d-block h-100 w-100" src="{{ URL('/img/ads').'/'.$value->ads_image }}">
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="sr-only">Previous</span>
+                                                </a>
+                                                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="sr-only">Next</span>
+                                                </a>
+                                            </div>
                                         </div>
-                                        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="sr-only">Previous</span>
-                                        </a>
-                                        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="sr-only">Next</span>
-                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="card text-white bg-success mb-3" style="max-width: 28rem;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Order(s) to Receive:</h5>
+                                        <h1 id="lbl-display-order-to-receive-client">...</h1>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="card text-black-50 bg-warning mb-3" style="max-width: 28rem;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Order(s) to be Approved:</h5>
+                                        <h1 id="lbl-display-order-to-approve-client">...</h1>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
+                                    <a data-fancybox='' href="{{ asset('img/product/default.jpg') }}" id="a-product-of-the-month-1"><img style="max-height: 14rem;" class="card-img-top" src="{{ asset('img/product/default.jpg') }}"  id="img-product-of-the-month-1"></a>
+                                    <div class="card-body">
+                                        <h4 class="card-title">Product of the Month:</h4>
+                                        <h5 id="lbl-product-of-the-month-1">....</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
+                                    <a data-fancybox='' href="{{ asset('img/product/default.jpg') }}" id="a-product-of-the-month-2"><img style="max-height: 14rem;" class="card-img-top" src="{{ asset('img/product/default.jpg') }}"  id="img-product-of-the-month-2"></a>
+                                    <div class="card-body">
+                                        <h4 class="card-title">Product of the Month:</h4>
+                                        <h5 id="lbl-product-of-the-month-2">....</h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
+                                    <a data-fancybox='' href="{{ asset('img/product/default.jpg') }}" id="a-product-of-the-month-3"><img style="max-height: 14rem;" class="card-img-top" src="{{ asset('img/product/default.jpg') }}"  id="img-product-of-the-month-3"></a>
+                                    <div class="card-body">
+                                        <h4 class="card-title">Product of the Month:</h4>
+                                        <h5 id="lbl-product-of-the-month-3">....</h5>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="card text-white bg-success mb-3" style="max-width: 28rem;">
-                                <div class="card-body">
-                                    <h5 class="card-title">Order(s) to Receive:</h5>
-                                    <h1 id="lbl-display-order-to-receive-client">...</h1>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="card text-black-50 bg-warning mb-3" style="max-width: 28rem;">
-                                <div class="card-body">
-                                    <h5 class="card-title">Order(s) to Approve:</h5>
-                                    <h1 id="lbl-display-order-to-approve-client">...</h1>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
-                                <a data-fancybox='' href="{{ asset('img/product/default.jpg') }}" id="a-product-of-the-month-1"><img style="max-height: 14rem;" class="card-img-top" src="{{ asset('img/product/default.jpg') }}"  id="img-product-of-the-month-1"></a>
-                                <div class="card-body">
-                                    <h4 class="card-title">Product of the Month:</h4>
-                                    <h5 id="lbl-product-of-the-month-1">....</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
-                                <a data-fancybox='' href="{{ asset('img/product/default.jpg') }}" id="a-product-of-the-month-2"><img style="max-height: 14rem;" class="card-img-top" src="{{ asset('img/product/default.jpg') }}"  id="img-product-of-the-month-2"></a>
-                                <div class="card-body">
-                                    <h4 class="card-title">Product of the Month:</h4>
-                                    <h5 id="lbl-product-of-the-month-2">....</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-4">
-                            <div class="card text-white bg-secondary mb-3" style="max-width: 18rem;">
-                                <a data-fancybox='' href="{{ asset('img/product/default.jpg') }}" id="a-product-of-the-month-3"><img style="max-height: 14rem;" class="card-img-top" src="{{ asset('img/product/default.jpg') }}"  id="img-product-of-the-month-3"></a>
-                                <div class="card-body">
-                                    <h4 class="card-title">Product of the Month:</h4>
-                                    <h5 id="lbl-product-of-the-month-3">....</h5>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                     @endif
-
-
                 </div>
             </div>
         </div>
