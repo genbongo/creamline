@@ -57,7 +57,7 @@
                                 <label class="col-sm-12 control-label">Product Image</label>
                                 <div class="col-sm-12">
                                     <label class="new-avatar hidden"><span class="far fa-plus-square"></span>
-                                        <input id="product_image" name="product_image" type="file" required="" class="text-center center-block file-upload"/>
+                                        <input id="product_image" name="product_image[]" multiple type="file" required="" class="text-center center-block file-upload"/>
                                     </label>
                                 </div>
                             </div>
@@ -347,27 +347,27 @@
             }
 
             // input
-            // var $input = $('<input name="size" class="form-control" placeholder="Press semicolon (;) to add sizes" />').keyup(function(event) {
+            var $input = $('<input name="size" class="form-control" placeholder="Press semicolon (;) to add sizes" />').keyup(function(event) {
 
-            //   if(event.which == 186) {
-            //     // key press is space or comma
-            //     var val = $(this).val().slice(0, -1); // remove space/comma from value
+              if(event.which == 186) {
+                // key press is space or comma
+                var val = $(this).val().slice(0, -1); // remove space/comma from value
 
-            //     // append to list of emails with remove button
-            //     $list.append($('<li class="list-group-item multipleInput-size"><span> ' + val + '</span></li>')
-            //       .append($('<a href="#" class="multipleInput-close" title="Remove">x</a>')
-            //         .click(function(e) {
-            //           $(this).parent().remove();
-            //           e.preventDefault();
-            //         })
-            //       )
-            //     );
+                // append to list of emails with remove button
+                $list.append($('<li class="list-group-item multipleInput-size"><span> ' + val + '</span></li>')
+                  .append($('<a href="#" class="multipleInput-close" title="Remove">x</a>')
+                    .click(function(e) {
+                      $(this).parent().remove();
+                      e.preventDefault();
+                    })
+                  )
+                );
 
-            //     $(this).attr('placeholder', '');
-            //     // empty input
-            //     $(this).val('');
-            //   }
-            // });
+                $(this).attr('placeholder', '');
+                // empty input
+                $(this).val('');
+              }
+            });
 
             // container div
             var $container = $('<div class="multipleInput-container"  id="container-size"/>').click(function() {

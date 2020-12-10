@@ -12,6 +12,7 @@
     <table id="dataTable" class="table table-striped table-bordered">
         <thead class="bg-indigo-1 text-white">
         <tr>
+            <th></th>
             <th>Cart ID</th>
             <th>Image</th>
             <th>Name</th>
@@ -45,11 +46,20 @@
             ajax: "{{ url('cart') }}",
             columns: [
                 // {data: 'DT_RowIndex', name: 'DT_RowIndex'},
+                {
+                    data: 'select', 
+                    name: 'select', 
+                    orderable: false, 
+                    render: function(data, type, full, meta) {
+                        return `<input type="checkbox" name="checkoutIds[]" class="checkout" value="${full.id}" style="margin: 9px; transform: scale(1.5)">`;
+                    }
+                },
                 {data: 'id', name: 'id'},
                 {
                     data: 'product_image', name: 'product_image',
                     "render": function (data, type, full, meta) {
-                        return "<a data-fancybox='' href='"+ data +"'><img src='"+ data +"' height='20'></a>";
+                        var url  = "{{ asset('img/product') }}" +"/"+ data
+                        return "<a data-fancybox='' href='"+ url +"'><img src='"+ url +"' height='20'></a>";
                     },
                 },
                 {data: 'product_name', name: 'product_name'},
@@ -65,9 +75,18 @@
                 {data: 'action', name: 'action', orderable: false, searchable: false},
             ]
         });
-
         // create or update cart
         $('#btnCheckout').click(function (e) {
+
+            var ids = $('.checkout:checked').map(function(){
+                return this.value;
+            }).get();
+
+            if (!ids.length) {
+                alert('Please Select Orders To Checkout')
+                return;
+            }
+
             swal({
                 title: "Are you sure?",
                 text: "Once confirmed, you will be redirect to transaction page",
@@ -78,7 +97,9 @@
             .then((isTrue) => {
                 if (isTrue) {
                     $.ajax({
-                        data: {},
+                        data: {
+                            ids
+                        },
                         url: "{{ url('save_cart') }}",
                         type: "GET",
                         dataType: 'json',

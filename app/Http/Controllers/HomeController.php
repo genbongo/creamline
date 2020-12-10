@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Product;
 use App\Rules\MatchOldPassword;
 use App\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -127,11 +128,9 @@ class HomeController extends Controller
     * Create a function display the count of Orders to deliver
     */
     public function display_order_to_deliver_count(){
-        if(env("DB_CONNECTION") == "pgsql"){
-            $getOrderToDeliverCount = DB::select("SELECT COUNT(*) as data FROM orders WHERE is_approved = '1' AND delivery_date = CURRENT_DATE");
-        }else{
-            $getOrderToDeliverCount = DB::select('SELECT COUNT(*) as data FROM orders WHERE is_approved = 1 AND delivery_date = CURDATE()');
-        }
+        $getOrderToDeliverCount = Order::where('is_approved', '=' ,'1')
+              ->where('delivery_date', '=', \Carbon::now())
+              ->count();
 
         return response()->json([
             'count'   => $getOrderToDeliverCount[0],

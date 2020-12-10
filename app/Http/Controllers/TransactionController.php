@@ -49,6 +49,13 @@ class TransactionController extends Controller
         //get the data from our session cart
         $cart_data = session('cart_data');
 
+
+        foreach ($cart_data as $session_cart) {
+            $cart = Cart::find($session_cart->id);
+            $cart->is_placed = 1;
+            $cart->save();
+        }
+
         $cart_object_array = [];
 
         //loop the cart data
@@ -59,7 +66,7 @@ class TransactionController extends Controller
 
                 $cart_object_array[] = [
                     "client_id" => $client_id,
-                    "delivery_date" => "10101010",
+                    "delivery_date" => Auth::user()->user_role == 99 ? $request->delivery_date : '101010',
                     "store_id" => $store_id,
                     "product_id" => $cart["product_id"],
                     "size" => $cart["size"],
@@ -69,7 +76,7 @@ class TransactionController extends Controller
                     "quantity_received" => 0,
                     "received_total_price" => 0,
                     "is_replacement" => $is_replacement,
-                    "is_approved" => 0,
+                    "is_approved" => Auth::user()->user_role == 99,
                     "is_cancelled" => 0,
                     "is_rescheduled" => 0,
                     "is_completed" => 0,
@@ -82,9 +89,6 @@ class TransactionController extends Controller
         }
 
         if(Order::insert($cart_object_array)){
-
-            //then delete the data for the cart from that user
-            Cart::where('user_id', $current_id)->delete();
 
             //then delete also the session
             Session::forget("cart_data");

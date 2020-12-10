@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Product_Report;
 use App\ProductFileReport;
+use App\Product_Report;
+use App\ReplacementProduct;
+use App\Traits\GlobalFunction;
+use DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use DataTables;
 use Validator;
-use App\Traits\GlobalFunction;
 
 class OrderReplacementController extends Controller
 {
@@ -31,44 +32,47 @@ class OrderReplacementController extends Controller
      */
     public function index(Request $request)
     {
-        if(env("DB_CONNECTION") == "pgsql"){
-            $file_replacement = DB::select("SELECT DISTINCT ON (product_reports.id) products.id AS prodid, product_reports.id AS reportid, product_reports.client_id AS clientid, 
-                                products.name AS prodname, product_file_reports.file_report_image, product_file_reports.quantity, product_file_reports.delivery_date,
-                                product_reports.is_replaced, users.fname, users.lname FROM product_reports 
-                                INNER JOIN product_file_reports ON product_reports.id = product_file_reports.product_report_id 
-                                INNER JOIN products ON product_reports.product_id = products.id 
-                                INNER JOIN users ON product_reports.client_id = users.id 
-                                ORDER BY product_reports.id");
-        }else{                        
-            $file_replacement = DB::table('product_reports')
-                ->join('product_file_reports', 'product_reports.id', '=', 'product_file_reports.product_report_id')
-                ->join('products', 'product_reports.product_id', '=', 'products.id')
-                ->join('users', 'product_reports.client_id', '=', 'users.id')
-                ->select('products.id AS prodid', 'product_reports.id AS reportid', 'product_file_reports.quantity', 'product_reports.client_id AS clientid', 'products.name AS prodname', 'product_file_reports.file_report_image', 'product_reports.is_replaced', 'product_reports.delivery_date', 'users.fname', 'users.lname')
-                ->groupBy('product_reports.id')
-                ->get();
+        if(Auth::user()->user_role == 99) {
+            $file_replacement = Product_Report::all();
+        } else {
+            $file_replacement = Product_Report::where('client_id', Auth::user()->id)
+                                    ->get();            
         }
-        
         if ($request->ajax()) {
             return Datatables::of($file_replacement)
                 ->addIndexColumn()
                 ->addColumn('action', function ($row) {
-
                     if ($row->delivery_date != "0000-00-00") {
                         return null;
                     }
-
                     if ($row->is_replaced == 1) {
-                        $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Replace Order" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-success btn-sm setDeliver">Set Delivery</a>&nbsp;';
+                        $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Replace Order" data-id="'.$row->id.'" data-clientid="'.$row->client_id.'" data-original-title="Edit" class="btn btn-success btn-sm setDeliver">Set Delivery</a>&nbsp;';
                     } else {
-
-                        $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Replace Order" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-primary btn-sm editReplacementOrder">Approve</a>&nbsp;';
-                        $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Disapprove Replacement" data-id="'.$row->reportid.'" data-clientid="'.$row->clientid.'" data-original-title="Edit" class="btn btn-danger btn-sm editDisapproveReplacement">Disapprove</a>';
+                        $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Replace Order" data-id="'.$row->id.'" data-clientid="'.$row->client_id.'" data-original-title="Edit" class="btn btn-primary btn-sm editReplacementOrder">Approve</a>&nbsp;';
+                        $btn .= '<a href="javascript:void(0)" data-toggle="tooltip" data-placement="top" title="Disapprove Replacement" data-id="'.$row->id.'" data-clientid="'.$row->client_id.'" data-original-title="Edit" class="btn btn-danger btn-sm editDisapproveReplacement">Disapprove</a>';
                     }
-
                     return $btn;
                 })
-                ->rawColumns(['action'])
+                ->addColumn('client', function($row){
+                    return $row->client;
+                })
+                ->addColumn('status', function($row){
+                  return $row->is_replaced;
+                })
+                ->addColumn('products', function($row) {
+                    return $row->products;
+                })
+                ->addColumn('quantity', function($row) {
+                   $total = 0;
+                   foreach ($row->products as $value) {
+                     $total += $value->quantity;
+                   }
+                    return $total;
+                })
+                ->addColumn('images', function($row) {
+                    return $row->images;
+                })
+                ->rawColumns(['status','products','quantity', 'images', 'action'])
                 ->make(true);
         }
     }
@@ -87,7 +91,8 @@ class OrderReplacementController extends Controller
         switch($action){
             //if approve replacement request button is clicked
             case "approve_replacement":
-                Product_Report::where('id', $request->input("reportid"))->update(["is_replaced" => 1]);
+                Product_Report::where('id', $request->input("reportid"))
+                                    ->update(["is_replaced" => 1]);
                 
                 //set message
                 $message = 'Your Replacement request # '.$request->input("reportid").' has been accepted. Please be advised accordingly';
@@ -160,5 +165,18 @@ class OrderReplacementController extends Controller
         return response()->json([
             'message' => "Delivery Date Set!",
         ]);
+    }
+
+    public function updateProducts(Request $request)
+    {
+        $products = json_decode($request->props);
+
+        foreach ($products as $product) {
+            $prd = ReplacementProduct::find($product->id);
+            $prd->quantity = $product->value;
+            $prd->save();
+        }
+
+        return response()->json('Success');
     }
 }

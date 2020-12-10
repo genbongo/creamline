@@ -75,7 +75,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Client</th>
-                            <th>Product Name</th>
+                            <th>Products</th>
                             <th>Images</th>
                             <th>Quantity</th>
                             <th>Status</th>
@@ -94,7 +94,6 @@
                             <th>Client</th>
                             <th>Product Name</th>
                             <th>Images</th>
-                            <th>Status</th>
                             <th width="280px">Action</th>
                         </tr>
                         </thead>
@@ -283,7 +282,57 @@
     </div>
 </div>
 
+{{-- display file images --}}
+<div class="modal fade" id="displayFileModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Product Report Images</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row text-center text-lg-left" id="divContentImages"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- display Products --}}
+<div class="modal fade" id="displayProductsModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Products</h4>
+            </div>
+            <div class="modal-body" id="divModalProducts">
+                <div class="row">
+                    <div class="col-4"><b> Product Name </b></div>
+                    <div class="col-4"><b> Size </b></div>
+                    <div class="col-4"><b> Quantity </b></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="row text-center">
+                    <button class="btn btn-success" id="replaceProduct">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="text/javascript">
+    $(document).ready(function() {
+        function onHashChange() {
+            var hash = window.location.hash;
+            console.log(hash)
+            if (hash) {
+                // using ES6 template string syntax
+                $(`[data-toggle="tab"][href="${hash}"]`).trigger('click');
+            }
+        }
+
+        window.addEventListener('hashchange', onHashChange, false);
+        onHashChange();
+    });
     $(() => {
 
         //ajax setup
@@ -562,13 +611,85 @@
         })
 
 
+        $(document).on('click', '#replaceProduct', function() {
+            const inpts = $('input[name ="quantity')
+            let arrs = [];
 
+            inpts.map(input => {
+                arrs.push({
+                    'id': inpts[input].id,
+                    'value': inpts[input].value
+                })
+            });
 
-        
+            const formData = new FormData;
+            formData.append('props', JSON.stringify(arrs));
+            $.ajax({
+                url:"{{ url('update/replacement') }}",
+                method:"POST",
+                data: formData,
+                dataType:'JSON',
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function (data) {
+                    drawAllTable()
+                    //disable the button
+                    $('#displayProductsModal').modal('hide');
+                },
+                error: function (data) {
+                    console.log('Error:', data);
+                }
+            });
+        });
 
         /* -------------------------------------------------------------------------------
                                     REPLACEMENT LIST
         -------------------------------------------------------------------------------- */
+
+        $(document).on('click', '.displayProducts', function(){
+            const products =JSON.parse($(this).attr("data-val"));
+            $('#displayProductsModal').modal('show');
+            $('#divModalProducts').empty();
+
+            var header = `<div class="row">
+                            <div class="col-4"><b> Product Name </b></div>
+                            <div class="col-4"><b> Size </b></div>
+                            <div class="col-4"><b> Quantity </b></div>
+                        </div>`
+            $('#divModalProducts').append(header)
+
+            products.map(product => {
+                var jsx =`
+                    <div class="row">
+                        <div class="col-4">
+                            ${product.name}
+                        </div>
+                         <div class="col-4">
+                            ${product.size}
+                        </div>
+                         <div class="col-4">
+                            <input type="number" id="${product.id}" value="${product.quantity}" name="quantity" class="form-control" />
+                        </div>
+                    </div>`;
+                $('#divModalProducts').append(jsx)
+            })
+        });
+
+        $(document).on('click', '.btnDisplayImages', function(){
+            $('#divContentImages').empty()
+            const images =JSON.parse($(this).attr("data-val"));
+            $('#displayFileModal').modal('show');
+            images.map(image => {
+                var jsx =`
+                    <div class="row">
+                        <div class="col-4 m-2">
+                            <img src="{{ URL('img/filereport') }}/${image.file_report_image}" style="height:101px;"/>
+                        </div>
+                    </div>`;
+                $('#divContentImages').append(jsx)
+            })
+        });
         // datatable
         var replacementTable = $('#replacementTable').DataTable({
             processing: true,
@@ -576,20 +697,26 @@
             ajax: "{{ url('order_replacement') }}",
             columns: [
                 // {data: 'DT_RowIndex', name: 'DT_RowIndex'},
-                {data: 'reportid', name: 'reportid'},
+                {data: 'id', name: 'id'},
                 {
-                    data: 'clientName', name: 'clientName',
+                    data: 'client', name: 'client',
                     render: function(data, type, full, meta){
-                        return full.lname + ', ' + full.fname;
+                        return full.client.lname + ', ' + full.client.fname;
                     }
                 },
-                {data: 'prodname', name: 'prodname'},
+                {
+                    data: 'products', 
+                    name: 'products',
+                    render: function(data, type, full, meta) {
+                        return "<a href='#' class='displayProducts' data-val='"+full.products+"'>View Products</a>"
+                    }
+                },
                 {
                     data: 'file_report_image', name: 'file_report_image',
                     render: function(data, type, full, meta){
                         let output = ''
                         if(data != ""){
-                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.reportid+"'>"+full.file_report_image+"</a>"
+                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.images+"'>View Images</a>"
                         }
 
                         return output
@@ -663,6 +790,8 @@
                             // undeliverTable.draw();
                             drawAllTable()
                         })
+
+                        $("#fileReplacementDelivery").modal("hide");
 
                         //disable the button
                         $("#btnConfirmReschedOrder").removeAttr("disabled");
@@ -780,8 +909,6 @@
 
 
 
-
-
         /* -------------------------------------------------------------------------------
                                     DAMAGE LIST
         -------------------------------------------------------------------------------- */
@@ -800,17 +927,6 @@
                     }
                 },
                 {data: 'prodname', name: 'prodname'},
-                {
-                    data: 'file_damage_image', name: 'file_damage_image',
-                    render: function(data, type, full, meta){
-                        let output = ''
-                        if(data != ""){
-                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.damageid+"'>...</a>"
-                        }
-
-                        return output
-                    }
-                },
                 {
                     data: 'is_replaced', name: 'is_replaced',
                     "render": function (data, type, full, meta) {

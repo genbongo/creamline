@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\ProductFileReport;
 use App\Product_Report;
+use App\ReplacementProduct;
 use App\Store;
 use DataTables;
 use Illuminate\Http\Request;
@@ -30,28 +31,33 @@ class FileReplacementController extends Controller
      */
     public function index(Request $request)
     {
-        if(env("DB_CONNECTION") == "pgsql"){
-            $file_replacement = DB::select("SELECT DISTINCT ON (product_reports.id) products.id AS prodid, product_reports.id AS reportid, 
-                                products.name AS prodname, product_file_reports.file_report_image, product_file_reports.quantity
-                                product_reports.is_replaced, users.fname, users.lname FROM product_reports 
-                                INNER JOIN product_file_reports ON product_reports.id = product_file_reports.product_report_id 
-                                INNER JOIN products ON product_reports.product_id = products.id 
-                                INNER JOIN users ON product_reports.client_id = users.id 
-                                WHERE product_reports.client_id = ".Auth::user()->id."
-                                ORDER BY product_reports.id");
-        }else{                        
-            $file_replacement = DB::table('product_reports')
-                ->join('product_file_reports', 'product_reports.id', '=', 'product_file_reports.product_report_id')
-                ->join('products', 'product_reports.product_id', '=', 'products.id')
-                ->select('products.id AS prodid', 'product_reports.id AS reportid', 'products.name AS prodname', 'product_file_reports.file_report_image','product_file_reports.quantity', 'product_reports.is_replaced')
-                ->groupBy('product_reports.id')
-                ->where('product_reports.client_id', Auth::user()->id)
-                ->get();
+        if(Auth::user()->user_role == 99) {
+            $file_replacement = Product_Report::where('client_id', Auth::user()->id)
+                                    ->get();
+        } else {
+            $file_replacement = Product_Report::all();
         }
 
         if ($request->ajax()) {
             return Datatables::of($file_replacement)
                 ->addIndexColumn()
+                ->addColumn('status', function($row){
+                  return $row->is_replaced;
+                })
+                ->addColumn('products', function($row) {
+                    return $row->products;
+                })
+                ->addColumn('quantity', function($row) {
+                   $total = 0;
+                   foreach ($row->products as $value) {
+                     $total += $value->quantity;
+                   }
+                    return $total;
+                })
+                ->addColumn('images', function($row) {
+                    return $row->images;
+                })
+                ->rawColumns(['status', 'quantity', 'images'])
                 ->make(true);
         }
 
@@ -72,20 +78,33 @@ class FileReplacementController extends Controller
      */
     public function store(Request $request)
     {
+        $prodIds = $request->product;
+        $size = $request->size;
+        $quantity = $request->quantity;
+
         if($request->hasFile('file_report_image'))
         {
             $allowedfileExtension=['jpg','png', 'jpeg'];
             $files = $request->file('file_report_image');
 
             $items = Product_Report::create([
-                'product_id' => $request->product_id,
-                'store_id' => $request->store_id,
-                'size' => $request->size_id,
-                'flavor' => $request->flavor_id,
-                'quantity' => $request->quantity,
+                'product_id' => ' ',
+                'store_id' => $request->store,
+                'size' => ' ',
+                'flavor' => ' ',
+                'quantity' => ' ',
                 'client_id' => Auth::user()->id,
                 'is_replaced' => 0,
             ]);
+
+            foreach ($prodIds as $key => $product) {
+                ReplacementProduct::create([
+                  'product_report_id' => $items->id,
+                  'product_id' => $product,
+                  'size' => $size[$key],
+                  'quantity' => $quantity[$key]
+                ]);
+            }
 
             foreach($files as $file){
                 $filename = $file->getClientOriginalName();

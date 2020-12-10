@@ -48,10 +48,30 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="card" style="width: 11rem;">
-                            <img class="card-img-top shop-img" id="div-modal-img" src="">
+                    <div class="col-md-6">
+                        <div class="card" style="width: 100%;">
                             <div class="card-body padding-all-10px">
+                                <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+                                    <!-- indicator -->
+                                  <ol class="carousel-indicators">
+                                    <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                                    <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                                    <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+                                  </ol>
+                                  <!-- indicator -->
+                                  <div class="carousel-inner" id="product_images">
+
+                                  </div>
+                                  <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Previous</span>
+                                  </a>
+                                  <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Next</span>
+                                  </a>
+                                 </div>
+
                                 <h5 class="card-title" id="div-modal-title">asdfadsf</h5>
                                 <p class="card-text" id="div-modal-text">adsfadsf</p>
                             </div>
@@ -60,7 +80,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <div class="form-group">
                             <label for="size_id" class="col-md-12 col-form-label">Size:</label>
                             <div class="col-md-12">
@@ -122,12 +142,30 @@
 
                 //set local variables data
                 prod_id = data.product.id;
-                prod_image = "{{ asset('img/product') }}" +"/"+ data.product.product_image;
                 prod_name = data.product.name;
                 prod_desc = data.product.description;
                 prod_stocks_qty = data.stock.quantity;
 
-                $("#div-modal-img").attr("src", "{{ asset('img/product') }}" +"/"+ data.product.product_image);
+                var name = data.product.product_image.split('.')
+                var url  = "{{ asset('img/product') }}" +"/"+ data.product.product_image
+                var jsx = `<div class="carousel-item active">
+                    <img class="d-block w-100" src="${url}" alt="${name[0]}">
+                  </div>`
+
+                $('#product_images').append(jsx)
+
+                {{ asset('img/product').'/'.$product->product_image}}
+
+                data.product.images.map(image => {
+                    var name = image.path.split('.')
+                    var url  = "{{ asset('img/product') }}" +"/"+ image.path
+                    var jsx = `<div class="carousel-item">
+                        <img class="d-block w-100" src="${url}" alt="${name[0]}">
+                      </div>`
+
+                    $('#product_images').append(jsx)
+                })
+
                 $("#div-modal-title").html(data.product.name);
 
                 //call the function that will populate the size dropdown
@@ -234,10 +272,8 @@
 
             $("#totalPrice").html("&#8369; " + variation_price[0] + ".00");
 
-            for(var i = 0; i < variation_size.length - 1; i++){
-
+            for(var i = 0; i < variation_size.length; i++){
                 output += '<option value="'+ variation_size[i] +'" data-price="'+ variation_price[i] +'">'+ variation_size[i] +'</option>';
-
             }
 
             $("#size_id").html(output);

@@ -25,7 +25,7 @@
                             <label class="col-sm-12 control-label">Product Image</label>
                             <div class="col-sm-12">
                                 <label class="new-avatar hidden"><span class="far fa-plus-square"></span>
-                                    <input id="product_image" name="product_image" type="file" class="text-center center-block file-upload"/>
+                                    <input id="product_image" name="product_image[]" multiple type="file" class="text-center center-block file-upload"/>
                                 </label>
                             </div>
                         </div>
@@ -291,43 +291,9 @@
 
         $.fn.Flavor = function() {
           return this.each(function() {
-            $list2 = $('<ul class="list-group list-group-flush" />');
-
-            for(let i=cFlavor.length;i--;){
-              if(!cFlavor[i]) continue;
-              $list2.append($('<li class="multipleInput-flavor  list-group-item"><span> '+ cFlavor[i] +'</span></li>')
-                .append($('<a href="#" class="multipleInput-close" title="Remove">&nbsp;x</a>')
-                  .click(function(e) {
-                    $(this).parent().remove();
-                    e.preventDefault();
-                  })
-                )
-              );
-            }
-
 
             // input
-            var $input2 = $('<input name="flavor" class="form-control" placeholder="Press semicolon (;) to add flavors" />').keyup(function(event) {
-
-              if(event.which == 186) {
-                // key press is space or comma
-                var val = $(this).val().slice(0, -1); // remove space/comma from value
-
-                // append to list of emails with remove button
-                $list2.append($('<li class="list-group-item multipleInput-flavor"><span> ' + val + '</span></li>')
-                  .append($('<a href="#" class="multipleInput-close" title="Remove">&nbsp;x</a>')
-                    .click(function(e) {
-                      $(this).parent().remove();
-                      e.preventDefault();
-                    })
-                  )
-                );
-
-                $(this).attr('placeholder', '');
-                // empty input
-                $(this).val('');
-              }
-            });
+            var $input2 = $('<input name="flavor" class="form-control" value="'+cFlavor[0]+'" />')
 
             // container div
             var $container = $('<div class="multipleInput-container" id="container-flavor" />').click(function() {
@@ -335,7 +301,7 @@
             });
 
             // insert elements into DOM
-            $container.append($list2).append($input2).insertAfter($(this));
+            $container.append($input2).insertAfter($(this));
 
             // add onsubmit handler to parent form to copy emails into original input as csv before submitting
             var $orig = $(this);

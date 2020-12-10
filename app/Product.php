@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Stock;
+use App\ProductImage;
 use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
@@ -14,5 +15,10 @@ class Product extends Model
     public function stock()
     {
     	return $this->hasOne(Stock::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
     }
 }

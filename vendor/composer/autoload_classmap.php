@@ -69,6 +69,7 @@ return array(
     'App\\ProductDamages' => $baseDir . '/app/ProductDamages.php',
     'App\\ProductFileDamages' => $baseDir . '/app/ProductFileDamages.php',
     'App\\ProductFileReport' => $baseDir . '/app/ProductFileReport.php',
+    'App\\ProductImage' => $baseDir . '/app/ProductImage.php',
     'App\\Product_Report' => $baseDir . '/app/Product_Report.php',
     'App\\Promo' => $baseDir . '/app/Promo.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',

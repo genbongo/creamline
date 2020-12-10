@@ -59,6 +59,8 @@ Route::get('client/{id}/stores', 'ClientController@storeList');
 Route::get('client/{id}/stores/json', 'ClientController@storeListJson');
 Route::post('replacement/set-deliver', 'OrderReplacementController@setDeliveryDate');
 
+Route::post('update/replacement', 'OrderReplacementController@updateProducts');
+
 //admin dashboard
 Route::get('display_order_to_deliver_count', 'HomeController@display_order_to_deliver_count')->name('display_order_to_deliver_count');
 Route::get('display_order_to_approve_count', 'HomeController@display_order_to_approve_count')->name('display_order_to_approve_count');
@@ -79,6 +81,7 @@ Route::resource('staff','StaffController');
 Route::resource('main','StaffDashboardController');
 Route::resource('product_list','StaffProductController');
 Route::post('emergency', 'StaffDashboardController@emergency');
+Route::get('get-sizes/{id}', 'ProductController@getSizes');
 
 
 /*---------------------------------------------------------------------------------------

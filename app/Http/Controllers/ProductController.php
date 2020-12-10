@@ -75,12 +75,13 @@ class ProductController extends Controller
         //if there is a product image selected
         if($request->hasFile("product_image")){
             $validation = Validator::make($request->all(), [
-                'product_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120'
+                'product_image.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120'
             ]);
 
             if($validation->passes())
             {
-                $image = $request->file('product_image');
+                $image = $request->file('product_image')[0];
+
                 $new_name = rand() . '.' . $image->getClientOriginalExtension();
                 $image->move(public_path('img/product'), $new_name);
 
@@ -93,6 +94,22 @@ class ProductController extends Controller
                     'product_image' => $new_name,
                 ]);
 
+                //
+
+                $images = $request->file('product_image');
+
+                foreach ($images as $key => $image) {
+                    if($key != 0 )
+                    {
+                        $file_name = rand() . '.' . $image->getClientOriginalExtension();
+                        $image->move(public_path('img/product'), $file_name);
+
+                        $productModel->images()->create([
+                            'path' => $file_name
+                        ]); 
+                    }
+                }
+               
                 //insert to stock table
                 $stockModel = Stock::updateOrCreate([
                     'id' => $request->stock_id
@@ -220,7 +237,7 @@ class ProductController extends Controller
      */
     public function edit_product($id)
     {
-        $product = Product::find($id);
+        $product = Product::with('images')->find($id);
         $variation = Variation::where('product_id', $id)->first();
         $stock = Stock::where('product_id', $id)->first();
 
@@ -293,5 +310,21 @@ class ProductController extends Controller
             'message' => $output,
         ];
         return response()->json($response, 200);
+    }
+
+    public function getSizes($id)
+    {
+        $variation =  Variation::where('product_id', $id)->first();
+
+        $sizes = explode(',', $variation->size);
+
+        $formatted = array_map(function($size) {
+            $size = $size;
+            if ($size) {
+                return (int) $size;
+            }
+        }, $sizes);
+
+        return response()->json($formatted);
     }
 }

@@ -103,7 +103,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card mt-4">
         <div class="card-header">
             Store Information
         </div>
@@ -120,6 +120,17 @@
             </select>
         </div>
     </div>
+    @if(auth()->user()->user_role == 99)
+        <div class="card mt-4">
+            <div class="card-header">
+                Delivery Date
+            </div>
+
+            <div class="card-body">
+                <input type="date" class="form-control" name="delivery_date" id="delivery_date">
+            </div>
+        </div>
+    @endif
 
     <script type="text/javascript">
         $(() => {
@@ -204,6 +215,7 @@
                         params.current_id = current_id;
                         params.store_id = store_id;
                         params.is_replacement = is_replacement;
+                        params.delivery_date = $('#delivery_date').val();
 
                         $.ajax({
                             data: params,
@@ -214,9 +226,8 @@
 
                                 //display a successful message
                                 swal("Information", data.message).then(function() {
-                                    
                                     if(isAdmin === true){
-                                        window.location = "order";
+                                        window.location = "order#order-tab-tran-his";
                                     }else{
                                         window.location = "info";
                                     }

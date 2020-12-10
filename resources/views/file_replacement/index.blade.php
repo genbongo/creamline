@@ -34,36 +34,57 @@
             </div>
             <div class="modal-body">
                 <form id="prodReportForm" name="prodReportForm" class="form-horizontal" enctype="multipart/form-data">
+                    @if(Auth::user()->user_role != 2)
+                        <div class="form-group">
+                            <input type="hidden" id="fileCount" name="fileCount">
+                            <label>Client:</label>
+                            <select class="form-control" id="client_id" name="client_id">
+                                <option value="">Please select a client</option>
+                                @foreach(\App\User::where('user_role', 2)->get() as $user)
+                                    <option value="{{ $user->id }}">{{ $user->fname }} {{ $user->lname }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                     <div class="form-group">
                         <input type="hidden" id="fileCount" name="fileCount">
-                        <label>Store name:</label>
-                        <select class="form-control" id="store_id" name="store_id">
-                            <option value="">Please select a store</option>
-                            @foreach($stores as $store)
-                                <option value="{{ $store->id }}">{{ $store->store_name }}</option>
-                            @endforeach
+                        <label>Store :</label>
+                        <select class="form-control" id="store_list" name="store">
+                            <option value="">Please select a Store</option>
+                            @if(Auth::user()->user_role == 2)
+                                @foreach(Auth::user()->stores as $store)
+                                    <option value="{{ $store->id }}">{{ $store->store_name }}</option>
+                                @endforeach
+                            @endif
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Product name:</label>
-                        <select class="form-control" id="product_id" name="product_id">
-                            <option value="">Please select a product</option>
-                            @foreach($products->get() as $product)
-                                <option value="{{ $product->id }}">{{ $product->name }}</option>
-                            @endforeach
-                        </select>
+                    <div class="form-group" id="product_list">
+                        <div class="row" id="row-1">
+                            <div class="col-lg-3">
+                                <select class="form-control" id="product" name="product[0]">
+                                    <option value="" disabled="" selected>Select Product</option>
+                                    @foreach(\App\Product::all() as $product)
+                                        <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="form-control" id="size-1" name="size[0]">
+                                    <option value="test" disabled>Please Select Size</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <input type="number" class="form-control"  name="quantity[0]">
+                            </div>
+                            <div class="col-lg-3 pl-3 pt-1">
+                               
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Quantity:</label>
-                        <input type="text" class="form-control" id="quantity" name="quantity">
-                    </div>
-                    <div class="form-group">
-                        <label>Size:</label>
-                        <select class="form-control" id="size_id" name="size_id"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Flavor:</label>
-                        <select class="form-control" id="flavor_id" name="flavor_id"></select>
+                    <div class="d-flex form-group justify-content-center">
+                        <button class="btn btn-success" id="addProduct">
+                            Add another Product
+                        </button>
                     </div>
                     <div class="form-group">
                         <label class="new-avatar hidden"><span class="far fa-plus-square"></span>
@@ -80,14 +101,32 @@
 </div>
 
 {{-- display file images --}}
-<div class="modal fade" id="displayReasonModal" aria-hidden="true">
+<div class="modal fade" id="displayFileModal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Product Report Images</h4>
             </div>
             <div class="modal-body">
-                <div class="row text-center text-lg-left" id="divModalImages"></div>
+                <div class="row text-center text-lg-left" id="divContentImages"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- display Products --}}
+<div class="modal fade" id="displayProductsModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Products</h4>
+            </div>
+            <div class="modal-body" id="divModalProducts">
+                <div class="row">
+                    <div class="col-4"><b> Product Name </b></div>
+                    <div class="col-4"><b> Size </b></div>
+                    <div class="col-4"><b> Quantity </b></div>
+                </div>
             </div>
         </div>
     </div>
@@ -96,6 +135,123 @@
 </body>
 
 <script type="text/javascript">
+
+    let productsNum = 1; 
+
+    const products = {!! \App\Product::all() !!}
+    
+    const displayOptions = () => {
+        let options = '';
+
+        products.map(product => {
+            options += `<option value="${product.id}">${product.name}</option>`
+        });
+        return options;
+    }
+
+    $('#addProduct').on('click', function(){
+        var newProduct = `<div class="row mt-2" id="row-${productsNum+1}">
+                            <div class="col-lg-3">
+                                <select class="form-control" id="product" name="product[${productsNum+1}]">
+                                   <option value="" disabled="" selected>Select Product</option>
+                                    ${displayOptions()}
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <select class="form-control" id="size-${productsNum+1}" name="size[${productsNum+1}]">
+                                    <option value="" disabled>Please Select a Size</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <input type="number" class="form-control"  name="quantity[${productsNum+1}]">
+                            </div>
+                            <div class="col-lg-3 pl-3 pt-1">
+                                <button class="btn btn-sm btn-danger removeRow" row-id="row-${productsNum+1}">remove</button>
+                            </div>
+                        </div>`;
+        productsNum++;
+        $('#product_list').append(newProduct);
+    });
+
+    $(document).on('click', '.removeRow', function(e) {
+      const id = $(this).attr("row-id");
+      $(`#${id}`).remove();
+    });
+
+     $(document).on('change', '#product', function(){
+        const id = $(this).val();
+        const sizeSelect = $(this).parent().siblings()[0].children[0].id
+
+        
+
+         $.get("{{ url('get-sizes') }}" + '/' + id, function (data) {
+            let sizeOptions = '';
+
+            data.map(size => {
+                if(size != null){
+                    $(`#${sizeSelect}`).append(`<option value="${size}">${size}</option>`)
+                }
+            });
+         });
+     })
+
+    $('#client_id').on('change', function() {
+        const id = this.value;
+
+        $.get(`/client/${id}/stores/json`, function (stores) {
+
+            var storeInput = '';
+            storeInput += '<option value="" disabled>Please select a Store</option>'
+            stores.map(store => {
+              storeInput += '<option value="'+store.id+'">'+store.store_name+'</option>'
+            })
+            //embed it to DOM
+            $("#store_list").empty().append(storeInput)
+        })
+    
+    })
+
+    $(document).on('click', '.displayProducts', function(){
+        const products =JSON.parse($(this).attr("data-val"));
+
+        $('#divContentImages').empty()
+
+        $('#displayProductsModal').modal('show');
+
+        products.map(product => {
+            var jsx =`
+                <div class="row">
+                    <div class="col-4">
+                        ${product.name}
+                    </div>
+                     <div class="col-4">
+                        ${product.size}
+                    </div>
+                     <div class="col-4">
+                        ${product.quantity}
+                    </div>
+                </div>`;
+            $('#divModalProducts').append(jsx)
+        })
+    });
+
+    $(document).on('click', '.btnDisplayImages', function(){
+        const images =JSON.parse($(this).attr("data-val"));
+
+        $('#displayFileModal').modal('show');
+
+        $('#divContentImages').empty()
+
+        images.map(image => {
+            var jsx =`
+                <div class="row">
+                    <div class="col-4 m-2">
+                        <img src="{{ URL('img/filereport') }}/${image.file_report_image}" style="height:101px;"/>
+                    </div>
+                </div>`;
+            $('#divContentImages').append(jsx)
+        })
+    });
 
     $(function () {
         //ajax setup
@@ -112,15 +268,20 @@
             ajax: "{{ url('file_replacement') }}",
             columns: [
                 // {data: 'DT_RowIndex', name: 'DT_RowIndex'},
-                {data: 'reportid', name: 'reportid'},
-                {data: 'prodname', name: 'prodname'},
+                {data: 'id', name: 'id'},
+                {
+                    data: 'products', 
+                    name: 'products',
+                    render: function(data, type, full, meta) {
+                        return "<a href='#' class='displayProducts' data-val='"+full.products+"'>View Products</a>"
+                    }
+                },
                 {
                     data: 'file_report_image', name: 'file_report_image',
                     render: function(data, type, full, meta){
-                        console.log(full)
                         let output = ''
                         if(data != ""){
-                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.reportid+"'>"+full.file_report_image+"</a>"
+                            output = "<a href='#' class='btnDisplayImages' data-val='"+full.images+"'>View Images</a>"
                         }
 
                         return output
@@ -157,13 +318,6 @@
         // create or update file_replacement
         $('#prodReportForm').on('submit', function (e) {
             e.preventDefault();
-
-            if($("#store_id").val() == ""){
-                return swal("Error", "Please select a store!")
-            }
-            if($("#product_id").val() == ""){
-                return swal("Error", "Please select a product!")
-            }
 
             $.ajax({
                 url:"{{ url('file_replacement') }}",
